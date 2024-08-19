@@ -99,6 +99,9 @@ require("lazy").setup({
     "github/copilot.vim"
   },
   {
+    "AckslD/swenv.nvim",
+  },
+  {
     "nvim-zh/colorful-winsep.nvim",
     opts={
       no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "neo-tree" },
@@ -173,6 +176,7 @@ require("lazy").setup({
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope-ui-select.nvim",
       "nvim-telescope/telescope-live-grep-args.nvim",
+      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
     },
     config = function()
       local telescope = require("telescope")
@@ -227,6 +231,7 @@ require("lazy").setup({
       vim.keymap.set("n", "<C-b>", builtin.buffers, {})
       telescope.load_extension("ui-select")
       telescope.load_extension("live_grep_args")
+      telescope.load_extension("fzf")
     end,
   },
   -- Git --------------------
