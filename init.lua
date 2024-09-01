@@ -442,8 +442,6 @@ vim.keymap.set("n", "<c-h>", ":wincmd w<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<c-l>", ":wincmd W<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "<c-t>", ":tabnew<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<c-Tab>", ":tabnext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<c-S-Tab>", ":tabprevious<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-q>", ":bd<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "K", vim.lsp.buf.hover)
