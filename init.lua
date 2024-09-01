@@ -1,14 +1,14 @@
 -- Lazy Bootsrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable",
-		lazypath,
-	})
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -30,23 +30,59 @@ vim.opt.wrap = false
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
+vim.opt.colorcolumn = "100"
+-- Disable the pesky mouse
+vim.opt.mouse = ""
+
+vim.opt.path = vim.opt.path + { "**" }
+vim.opt.wildmenu = true
+vim.opt.wildmode = "longest:full,full"
+
+-- Relative line numbers
+vim.wo.relativenumber = true
+
+-- Automatically change dirs when switching between files
+local api = vim.api
+local fn = vim.fn
+
+api.nvim_create_augroup("WorkingDirectory", { clear = true })
+api.nvim_create_autocmd({ "BufEnter" }, {
+  pattern = { "*" },
+  callback = function()
+    local path = fn.expand('%:h') .. "/"
+    -- This allows us to up nvim with no args and still have the cwd where we opened nvim
+    if path == "/" then
+      path = "$PWD"
+    end
+    path = "cd " .. path
+    api.nvim_command(path)
+  end,
+  group = "WorkingDirectory",
+})
 
 --- Plugins -------------------------------------------------------------------
 require("lazy").setup({
   -- UI ---------------------
-	{
-		"catppuccin/nvim",
-		name = "catppuccin",
-		lazy = false,
-		priority = 1000,
-		config = function()
-			vim.cmd.colorscheme("catppuccin-mocha")
-		end,
-	},
+  {
+    "loctvl842/monokai-pro.nvim",
+    name = "monokai-pro",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("monokai-pro").setup({
+        overridePalette = function()
+          return {
+            background = "#111111"
+          }
+        end
+      })
+      vim.cmd "colorscheme monokai-pro-spectrum"
+    end,
+  },
   {
     "folke/which-key.nvim",
-		lazy = false,
-		priority = 999,
+    lazy = false,
+    priority = 999,
     init = function()
       vim.o.timeout = true
       vim.o.timeoutlen = 10
@@ -54,8 +90,8 @@ require("lazy").setup({
   },
   {
     "folke/noice.nvim",
-		lazy = false,
-		priority = 998,
+    lazy = false,
+    priority = 998,
     opts = {
       lsp = {
         override = {
@@ -89,11 +125,11 @@ require("lazy").setup({
   },
   {
     "ojroques/nvim-bufdel",
-    lazy=false,
+    lazy = false,
   },
   {
     "numToStr/Comment.nvim",
-    lazy=false,
+    lazy = false,
   },
   {
     "github/copilot.vim"
@@ -103,7 +139,7 @@ require("lazy").setup({
   },
   {
     "nvim-zh/colorful-winsep.nvim",
-    opts={
+    opts = {
       no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "neo-tree" },
     },
     config = true,
@@ -117,18 +153,18 @@ require("lazy").setup({
     },
     opts = {
       sections = {
-        lualine_a = {'mode'},
-        lualine_b = {'branch', 'diff'},
-        lualine_c = {{'filename', path=1}},
-        lualine_x = {'filetype'},
-        lualine_y = {'diagnostics', 'lsp_progress'},
-        lualine_z = { 'progress', 'location'}
+        lualine_a = { 'mode' },
+        lualine_b = { 'branch', 'diff' },
+        lualine_c = { { 'filename', path = 1 } },
+        lualine_x = { 'filetype' },
+        lualine_y = { 'diagnostics', 'lsp_progress' },
+        lualine_z = { 'progress', 'location' }
       },
       inactive_sections = {
         lualine_a = {},
         lualine_b = {},
-        lualine_c = {'filename'},
-        lualine_x = {'encoding', 'fileformat', 'filetype'},
+        lualine_c = { 'filename' },
+        lualine_x = { 'encoding', 'fileformat', 'filetype' },
         lualine_y = {},
         lualine_z = {}
       },
@@ -164,6 +200,11 @@ require("lazy").setup({
         follow_current_file = {
           enabled = true,
           leave_dirs_open = true,
+        },
+        filtered_items = {
+          visible = true,
+          hide_dotfiles = false,
+          hide_gitignored = false,
         },
       },
     },
@@ -235,13 +276,13 @@ require("lazy").setup({
     end,
   },
   -- Git --------------------
-	{
-		"lewis6991/gitsigns.nvim",
+  {
+    "lewis6991/gitsigns.nvim",
     dependencies = { "tpope/vim-fugitive" },
     opts = {
       current_line_blame = true,
     },
-	},
+  },
   {
     "kdheepak/lazygit.nvim",
     cmd = { "LazyGit", },
@@ -250,53 +291,53 @@ require("lazy").setup({
     },
   },
   -- LSP --------------------
-	{
-		"williamboman/mason.nvim",
-		lazy = false,
-		config = function()
-			require("mason").setup({
-				ui = {
-					icons = {
-						package_installed = "✓",
-						package_pending = "➜",
-						package_uninstalled = "✗",
-					},
-				},
-			})
-		end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		lazy = false,
-		opts = {
-			auto_install = true,
-			ensure_installed = {
-				"clangd",
-				"rust_analyzer",
-				"lua_ls",
-				"pylsp",
-				"ruff",
-			},
-		},
-	},
-	{
-		"neovim/nvim-lspconfig",
-		lazy = false,
-		config = function()
-			local capabilities = require("cmp_nvim_lsp").default_capabilities()
+  {
+    "williamboman/mason.nvim",
+    lazy = false,
+    config = function()
+      require("mason").setup({
+        ui = {
+          icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗",
+          },
+        },
+      })
+    end,
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    lazy = false,
+    opts = {
+      auto_install = true,
+      ensure_installed = {
+        "clangd",
+        "rust_analyzer",
+        "lua_ls",
+        "pylsp",
+        "ruff",
+      },
+    },
+  },
+  {
+    "neovim/nvim-lspconfig",
+    lazy = false,
+    config = function()
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-			local lspconfig = require("lspconfig")
-			lspconfig.clangd.setup({
-				capabilities = capabilities,
-			})
-			lspconfig.rust_analyzer.setup({
-				capabilities = capabilities,
-			})
-			lspconfig.lua_ls.setup({
-				capabilities = capabilities,
-			})
-			lspconfig.pylsp.setup({
-				capabilities = capabilities,
+      local lspconfig = require("lspconfig")
+      lspconfig.clangd.setup({
+        capabilities = capabilities,
+      })
+      lspconfig.rust_analyzer.setup({
+        capabilities = capabilities,
+      })
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+      })
+      lspconfig.pylsp.setup({
+        capabilities = capabilities,
         settings = {
           pylsp = {
             plugins = {
@@ -311,57 +352,57 @@ require("lazy").setup({
             }
           }
         }
-			})
-			lspconfig.ruff_lsp.setup({
-				capabilities = capabilities,
+      })
+      lspconfig.ruff_lsp.setup({
+        capabilities = capabilities,
         init_options = {
-            settings = {
-                args = {
-                  "--config=~/aircam/ruff.toml",
-                },
+          settings = {
+            args = {
+              "--config=~/aircam/ruff.toml",
             },
+          },
         },
-			})
-		end,
-	},
-	{
-		"hrsh7th/nvim-cmp",
+      })
+    end,
+  },
+  {
+    "hrsh7th/nvim-cmp",
     dependencies = {
-		  "hrsh7th/cmp-nvim-lsp",
-		  "L3MON4D3/LuaSnip",
-			"saadparwaiz1/cmp_luasnip",
-			"rafamadriz/friendly-snippets",
+      "hrsh7th/cmp-nvim-lsp",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+      "rafamadriz/friendly-snippets",
     },
-		config = function()
-			local cmp = require("cmp")
-			require("luasnip.loaders.from_vscode").lazy_load()
+    config = function()
+      local cmp = require("cmp")
+      require("luasnip.loaders.from_vscode").lazy_load()
 
-			cmp.setup({
-				snippet = {
-					expand = function(args)
-						require("luasnip").lsp_expand(args.body)
-					end,
-				},
-				window = {
-					completion = cmp.config.window.bordered(),
-					documentation = cmp.config.window.bordered(),
-				},
-				mapping = cmp.mapping.preset.insert({
-					["<C-j>"] = cmp.mapping.select_next_item(),
-					["<C-k>"] = cmp.mapping.select_prev_item(),
-					["<C-Space>"] = cmp.mapping.complete(),
-					["<C-e>"] = cmp.mapping.abort(),
-					["<CR>"] = cmp.mapping.confirm({ select = true }),
-				}),
-				sources = cmp.config.sources({
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" }, -- For luasnip users.
-				}, {
-					{ name = "buffer" },
-				}),
-			})
-		end,
-	},
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            require("luasnip").lsp_expand(args.body)
+          end,
+        },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        mapping = cmp.mapping.preset.insert({
+          ["<C-j>"] = cmp.mapping.select_next_item(),
+          ["<C-k>"] = cmp.mapping.select_prev_item(),
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" }, -- For luasnip users.
+        }, {
+          { name = "buffer" },
+        }),
+      })
+    end,
+  },
   {
     "stevearc/conform.nvim",
     opts = {
@@ -378,7 +419,7 @@ require("lazy").setup({
   },
   {
     "mfussenegger/nvim-lint",
-    config= function()
+    config = function()
       require("lint").linters_by_ft = { python = { "mypy" } }
       vim.api.nvim_create_autocmd({ "BufWritePost" }, {
         callback = function()
@@ -401,8 +442,8 @@ vim.keymap.set("n", "<c-h>", ":wincmd w<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<c-l>", ":wincmd W<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "<c-t>", ":tabnew<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<Tab>", ":tabnext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<S-Tab>", ":tabprevious<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<c-Tab>", ":tabnext<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<c-S-Tab>", ":tabprevious<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-q>", ":bd<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "K", vim.lsp.buf.hover)
@@ -410,23 +451,34 @@ vim.keymap.set("n", "gd", vim.lsp.buf.definition)
 vim.keymap.set("n", "gr", vim.lsp.buf.references)
 vim.keymap.set("n", "<C-I>", vim.lsp.buf.format)
 
+-- Resize tabs with arrow keys -----------------
+vim.keymap.set("n", "<Up>", ":resize +5<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Down>", ":resize -5<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Right>", ":vert resize +5<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Left>", ":vert resize -5<CR>", { noremap = true, silent = true })
+
+vim.keymap.set("n", ",,", ":Neotree filesystem reveal left<CR>", { noremap = true, silent = true })
+
+vim.keymap.set("n", "<c-f>", require('telescope').extensions.live_grep_args.live_grep_args,
+  { noremap = true, silent = true })
+
 require("which-key").register({
-	["leader"] = { "<cmd>telescope.builtin.oldfiles", "Recent" },
+  ["leader"] = { "<cmd>telescope.builtin.oldfiles", "Recent" },
   w = { "<cmd>write<CR>", "Write" },
   b = {
-    name="Buffer",
-    b = { "<cmd>BufDel<CR>", "Bye"},
-    a = { "<cmd>BufDelOthers<CR>", "Close All Others"},
-    j = { "<cmd>bnext<CR>", "Next"},
-    k = { "<cmd>bprevious<CR>", "Previous"},
+    name = "Buffer",
+    b = { "<cmd>BufDel<CR>", "Bye" },
+    a = { "<cmd>BufDelOthers<CR>", "Close All Others" },
+    j = { "<cmd>bnext<CR>", "Next" },
+    k = { "<cmd>bprevious<CR>", "Previous" },
   },
-	e = {
+  e = {
     name = "Explorer",
     e = { "<cmd>Neotree filesystem reveal left<cr>", "Explorer" },
     t = { "<cmd>Neotree filesystem reveal toggle left<cr>", "Explorer" },
     b = { "<cmd>Neotree buffers reveal float<cr>", "Buffers" },
   },
-	f = {
+  f = {
     name = "Find",
     f = { "<cmd>Telescope find_files<cr>", "Files" },
     b = { "<cmd>Telescope buffers<cr>", "Buffers" },
@@ -437,26 +489,25 @@ require("which-key").register({
     r = { "<cmd>Telescope lsp_references<cr>", "References" },
     d = { "<cmd>Telescope diagnostics bufnr=0<cr>", "Diagnostics" },
   },
-	l = { "<cmd>LazyGit<CR>", "LazyGit" },
-	c = {
-		name = "Code",
-		a = { vim.lsp.buf.code_action, "Code Action" },
+  l = { "<cmd>LazyGit<CR>", "LazyGit" },
+  c = {
+    name = "Code",
+    a = { vim.lsp.buf.code_action, "Code Action" },
     h = { "<cmd>ClangdSwitchSourceHeader<CR>", "Header/Source" },
-		f = {
-			function()
-				require("conform").format({
-					lsp_fallback = true,
-					async = false,
-					timeout_ms = 1000,
-				})
-			end,
-			"Format",
-		},
-	},
-	p = {
-		name = "Packages",
-		l = { "<cmd>Lazy<cr>", "Lazy" },
-		m = { "<cmd>Mason<cr>", "Mason" },
-	},
+    f = {
+      function()
+        require("conform").format({
+          lsp_fallback = true,
+          async = false,
+          timeout_ms = 1000,
+        })
+      end,
+      "Format",
+    },
+  },
+  p = {
+    name = "Packages",
+    l = { "<cmd>Lazy<cr>", "Lazy" },
+    m = { "<cmd>Mason<cr>", "Mason" },
+  },
 }, { prefix = "<leader>" })
-
