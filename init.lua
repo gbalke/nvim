@@ -45,20 +45,20 @@ vim.wo.relativenumber = true
 local api = vim.api
 local fn = vim.fn
 
-api.nvim_create_augroup("WorkingDirectory", { clear = true })
-api.nvim_create_autocmd({ "BufEnter" }, {
-  pattern = { "*" },
-  callback = function()
-    local path = fn.expand('%:h') .. "/"
-    -- This allows us to up nvim with no args and still have the cwd where we opened nvim
-    if path == "/" then
-      path = "$PWD"
-    end
-    path = "cd " .. path
-    api.nvim_command(path)
-  end,
-  group = "WorkingDirectory",
-})
+-- api.nvim_create_augroup("WorkingDirectory", { clear = true })
+-- api.nvim_create_autocmd({ "BufEnter" }, {
+--   pattern = { "*" },
+--   callback = function()
+--     local path = fn.expand('%:h') .. "/"
+--     -- This allows us to up nvim with no args and still have the cwd where we opened nvim
+--     if path == "/" then
+--       path = "$PWD"
+--     end
+--     path = "cd " .. path
+--     api.nvim_command(path)
+--   end,
+--   group = "WorkingDirectory",
+-- })
 
 --- Plugins -------------------------------------------------------------------
 require("lazy").setup({
