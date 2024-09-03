@@ -408,8 +408,9 @@ require("lazy").setup({
     opts = {
       formatters_by_ft = {
         cpp = { "clang-format" },
-        python = { "isort", "ruff_format" },
+        python = { "isort", "ruff_format", "black" },
         lua = { "stylua" },
+        bazel = { "bazel run //:buildifier" },
       },
       format_on_save = {
         timout_ms = 1000,
